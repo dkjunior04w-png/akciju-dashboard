@@ -2,141 +2,147 @@
 <html lang="lt">
 <head>
     <meta charset="UTF-8">
-    <title>INVESTOR PRO TERMINAL | V6</title>
+    <title>INVESTOR TERMINAL v7 | Professional</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root { --bg: #0a0e14; --side: #131722; --card: #1e222d; --accent: #2962ff; --border: #363a45; --text: #d1d4dc; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', -apple-system, sans-serif; }
+        :root { --bg: #0a0e14; --side: #131722; --card: #1e222d; --accent: #2962ff; --text: #d1d4dc; --border: #2a2e39; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-        
+
         /* Sidebar */
         aside { width: 220px; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .logo { padding: 25px; font-weight: 900; color: white; letter-spacing: 1px; border-bottom: 1px solid var(--border); text-align: center; font-size: 1.1rem; }
-        nav { flex: 1; padding: 20px 10px; }
-        nav li { padding: 15px; margin-bottom: 8px; cursor: pointer; border-radius: 6px; list-style: none; font-size: 0.85rem; color: #787b86; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
-        nav li:hover { background: #2a2e39; color: white; }
-        nav li.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(41, 98, 255, 0.3); }
+        .logo { padding: 20px; font-weight: 800; color: white; border-bottom: 1px solid var(--border); text-align: center; }
+        nav { flex: 1; padding: 15px 10px; }
+        nav li { padding: 12px 15px; margin-bottom: 5px; cursor: pointer; border-radius: 6px; list-style: none; color: #787b86; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        nav li:hover, nav li.active { background: var(--accent); color: white; }
 
-        /* Content */
+        /* Main Content */
         main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        header { padding: 15px 30px; background: var(--side); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 20px; }
-        input { background: var(--card); border: 1px solid var(--border); padding: 10px 15px; border-radius: 6px; color: white; width: 200px; font-weight: bold; outline: none; }
-        button { background: var(--accent); color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:hover { transform: translateY(-1px); background: #326eff; }
+        header { padding: 15px 25px; background: var(--side); border-bottom: 1px solid var(--border); display: flex; gap: 15px; align-items: center; position: sticky; top: 0; z-index: 10; }
+        input { background: var(--card); border: 1px solid var(--border); padding: 10px; border-radius: 4px; color: white; width: 150px; font-weight: bold; }
+        button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-        .dashboard { padding: 20px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
+        .container { padding: 20px; }
+        .section { display: none; width: 100%; }
+        .section.active { display: block; }
         
-        /* Widget Blocks */
-        .block { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; position: relative; }
-        .block-title { padding: 10px 15px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #787b86; }
+        .widget-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; height: 600px; }
+        .label { padding: 10px 15px; background: rgba(255,255,255,0.03); font-size: 0.7rem; font-weight: bold; color: #787b86; border-bottom: 1px solid var(--border); text-transform: uppercase; }
         
-        .col-8 { grid-column: span 8; }
-        .col-4 { grid-column: span 4; }
-        .h-500 { height: 500px; }
+        .small-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .h-400 { height: 400px; }
-        .h-600 { height: 600px; }
     </style>
 </head>
 <body>
 
 <aside>
     <div class="logo">PRO TERMINAL</div>
-    <nav>
-        <li class="active"><i class="fas fa-layer-group"></i> Analizės Centras</li>
-        <li><i class="fas fa-file-invoice"></i> Finansinės Ataskaitos</li>
-        <li><i class="fas fa-users-cog"></i> Institucijos / Insider</li>
-        <li><i class="fas fa-rss"></i> Naujienų Srautas</li>
+    <nav id="menu">
+        <li class="active" data-section="overview"><i class="fas fa-chart-line"></i> Apžvalga</li>
+        <li data-section="financials"><i class="fas fa-file-invoice-dollar"></i> Finansai (5 m.)</li>
+        <li data-section="analysis"><i class="fas fa-microchip"></i> Vertinimas</li>
+        <li data-section="news"><i class="fas fa-rss"></i> Naujienos</li>
     </nav>
 </aside>
 
 <main>
     <header>
-        <input type="text" id="symbolInput" value="VNDA" placeholder="Įveskite simbolį...">
-        <button onclick="loadTerminal()">ATNAUJINTI TERMINALĄ</button>
-        <div id="priceStatus" style="margin-left: auto; font-size: 0.8rem; color: #089981;"><i class="fas fa-bolt"></i> RYŠYS AKTYVUS</div>
+        <input type="text" id="symbolInput" value="VNDA" placeholder="SIMBOLIS...">
+        <button onclick="updateAll()">ANALIZUOTI</button>
+        <div style="margin-left: auto; font-size: 0.8rem; color: #089981;"><i class="fas fa-circle"></i> RYŠYS AKTYVUS</div>
     </header>
 
-    <div class="dashboard">
-        <div class="block col-8 h-500">
-            <div class="block-title">Kainos dinamika ir apimtys (Real-time)</div>
-            <div id="chart_main" style="height: calc(100% - 35px);"></div>
+    <div class="container">
+        <div id="overview" class="section active">
+            <div class="widget-box" style="height: 100px; border: none; background: transparent;">
+                <div id="tv-mini"></div>
+            </div>
+            <div class="widget-box">
+                <div class="label">Kainos grafikas</div>
+                <div id="tv-chart" style="height: calc(100% - 35px);"></div>
+            </div>
+            <div class="widget-box h-400">
+                <div class="label">Įmonės profilis</div>
+                <div id="tv-profile" style="height: calc(100% - 35px);"></div>
+            </div>
         </div>
 
-        <div class="block col-4 h-500">
-            <div class="block-title">Wall Street prognozės (Tikslinė kaina)</div>
-            <div id="analyst_rating" style="height: calc(100% - 35px);"></div>
+        <div id="financials" class="section">
+            <div class="widget-box" style="height: 700px;">
+                <div class="label">Pajamų ir Pelno tendencijos (Paspauskite "Income Statement")</div>
+                <div id="tv-fin" style="height: calc(100% - 35px);"></div>
+            </div>
         </div>
 
-        <div class="block col-8 h-600">
-            <div class="block-title">5 metų augimo tendencijos (Pajamos, Pelno nuostolis, Pinigų srautas)</div>
-            <div id="financials_deep" style="height: calc(100% - 35px);"></div>
+        <div id="analysis" class="section">
+            <div class="small-grid">
+                <div class="widget-box h-400">
+                    <div class="label">Techninis indikatorius</div>
+                    <div id="tv-tech" style="height: calc(100% - 35px);"></div>
+                </div>
+                <div class="widget-box h-400">
+                    <div class="label">Fundamentalūs duomenys</div>
+                    <div id="tv-fund" style="height: calc(100% - 35px);"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="block col-4 h-600">
-            <div class="block-title">Įmonės profilis ir akcininkų struktūra</div>
-            <div id="profile_deep" style="height: calc(100% - 35px);"></div>
-        </div>
-
-        <div class="block col-8 h-400">
-            <div class="block-title">Išsamūs fundamentalūs rodikliai (Valuation/Efficiency)</div>
-            <div id="fundamentals_table" style="height: calc(100% - 35px);"></div>
-        </div>
-
-        <div class="block col-4 h-400">
-            <div class="block-title">Aktualiausios naujienos</div>
-            <div id="news_stream" style="height: calc(100% - 35px);"></div>
+        <div id="news" class="section">
+            <div class="widget-box" style="height: 800px;">
+                <div class="label">Naujausios rinkos naujienos</div>
+                <div id="tv-news" style="height: calc(100% - 35px);"></div>
+            </div>
         </div>
     </div>
 </main>
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    function loadTerminal() {
-        let ticker = document.getElementById('symbolInput').value.toUpperCase();
-        
-        // Svarbu: biotechnologijų akcijos dažniausiai yra NASDAQ
-        const fullSymbol = (["VNDA", "ESPR", "NVDA", "AAPL", "TSLA"].includes(ticker)) ? "NASDAQ:" + ticker : "NYSE:" + ticker;
+    // Skyrių perjungimo logika
+    document.querySelectorAll('#menu li').forEach(li => {
+        li.addEventListener('click', function() {
+            document.querySelectorAll('#menu li').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            
+            this.classList.add('active');
+            document.getElementById(this.dataset.section).classList.add('active');
+            updateAll(); // Perkrauname grafikus, kad jie prisitaikytų prie naujo matomumo
+        });
+    });
 
-        // 1. PAGRINDINIS GRAFIKAS
+    function updateAll() {
+        const symbol = document.getElementById('symbolInput').value.toUpperCase();
+
+        // 1. Pagrindinis grafikas
         new TradingView.widget({
-            "autosize": true, "symbol": fullSymbol, "interval": "D", "timezone": "Etc/UTC",
-            "theme": "dark", "style": "1", "locale": "lt", "toolbar_bg": "#f1f3f6",
-            "enable_publishing": false, "container_id": "chart_main"
+            "autosize": true, "symbol": symbol, "interval": "D", "timezone": "Etc/UTC",
+            "theme": "dark", "style": "1", "locale": "lt", "container_id": "tv-chart"
         });
 
-        // 2. FINANSAI (AUGIMO GRAFIKAI)
-        // Šiame widget'e naudotojas gali pats persijungti tarp "Income Statement" ir kt.
-        renderWidget("financials_deep", "financials", {
-            "symbol": fullSymbol, "displayMode": "regular", "width": "100%", "height": "100%", "locale": "lt"
-        });
+        // 2. Viršutinė info juosta (Kaina, Market Cap)
+        renderWidget("tv-mini", "symbol-info", { "symbol": symbol, "width": "100%", "locale": "lt" });
 
-        // 3. ANALITIKŲ REITINGAI
-        renderWidget("analyst_rating", "technical-analysis", {
-            "symbol": fullSymbol, "interval": "1D", "width": "100%", "height": "100%", "locale": "lt"
-        });
+        // 3. Finansai (Čia yra tie 5 metų grafikai)
+        renderWidget("tv-fin", "financials", { "symbol": symbol, "displayMode": "regular", "width": "100%", "height": "100%", "locale": "lt" });
 
-        // 4. ĮMONĖS PROFILIS
-        renderWidget("profile_deep", "symbol-profile", {
-            "symbol": fullSymbol, "width": "100%", "height": "100%", "locale": "lt"
-        });
+        // 4. Profilis
+        renderWidget("tv-profile", "symbol-profile", { "symbol": symbol, "width": "100%", "height": "100%", "locale": "lt" });
 
-        // 5. RODIKLIŲ LENTELĖ
-        renderWidget("fundamentals_table", "fundamental-data", {
-            "symbol": fullSymbol, "displayMode": "regular", "width": "100%", "height": "100%", "locale": "lt"
-        });
+        // 5. Techninė analizė
+        renderWidget("tv-tech", "technical-analysis", { "symbol": symbol, "interval": "1D", "width": "100%", "height": "100%", "locale": "lt" });
 
-        // 6. NAUJIENOS
-        renderWidget("news_stream", "timeline", {
-            "symbol": fullSymbol, "width": "100%", "height": "100%", "locale": "lt"
-        });
+        // 6. Fundamentalūs skaičiai
+        renderWidget("tv-fund", "fundamental-data", { "symbol": symbol, "displayMode": "regular", "width": "100%", "height": "100%", "locale": "lt" });
+
+        // 7. Naujienos
+        renderWidget("tv-news", "timeline", { "symbol": symbol, "width": "100%", "height": "100%", "locale": "lt" });
     }
 
-    function renderWidget(id, type, config) {
-        const container = document.getElementById(id);
-        container.innerHTML = "";
+    function renderWidget(containerId, type, config) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = ""; // Išvalome seną
         const script = document.createElement('script');
         script.src = `https://s3.tradingview.com/external-embedding/embed-widget-${type}.js`;
-        script.type = 'text/javascript';
         script.async = true;
         config.colorTheme = "dark";
         config.isTransparent = true;
@@ -144,7 +150,8 @@
         container.appendChild(script);
     }
 
-    window.onload = loadTerminal;
+    // Paleidžiame pirmą kartą
+    window.onload = updateAll;
 </script>
 </body>
 </html>
