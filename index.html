@@ -3,98 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProTerminal | Real-Time</title>
+    <title>ProTerminal v3 | Deep Analysis</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root { --bg: #0a0e17; --sidebar: #131722; --card: #1e222d; --accent: #2962ff; --text: #d1d4dc; --border: #363a45; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Trebuchet MS', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-        aside { width: 240px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .brand { padding: 25px; font-size: 1.4rem; font-weight: bold; color: white; border-bottom: 1px solid var(--border); }
-        nav { flex: 1; padding: 20px 10px; }
-        nav li { padding: 12px 15px; margin-bottom: 8px; cursor: pointer; border-radius: 6px; color: #787b86; display: flex; align-items: center; gap: 12px; }
-        nav li.active { background: var(--accent); color: white; }
+        
+        aside { width: 220px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .brand { padding: 20px; font-size: 1.2rem; font-weight: 800; letter-spacing: 1px; color: white; border-bottom: 1px solid var(--border); }
+        
+        nav { flex: 1; padding: 15px 10px; }
+        nav li { padding: 12px 15px; margin-bottom: 5px; cursor: pointer; border-radius: 4px; color: #787b86; font-size: 0.9rem; list-style: none; transition: 0.2s; }
+        nav li:hover { background: #2a2e39; color: white; }
+        nav li.active { background: var(--accent); color: white; font-weight: bold; }
+
         main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        header { padding: 15px 30px; background: var(--sidebar); border-bottom: 1px solid var(--border); display: flex; gap: 15px; align-items: center; position: sticky; top: 0; z-index: 10; }
-        input { background: var(--card); border: 1px solid var(--border); padding: 10px; border-radius: 4px; color: white; width: 200px; }
-        button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .content { padding: 20px; }
-        .section { display: none; }
+        header { padding: 12px 25px; background: var(--sidebar); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 100; }
+        
+        .search-container { position: relative; display: flex; align-items: center; }
+        input { background: var(--card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 4px; color: white; width: 180px; font-weight: bold; outline: none; }
+        button { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+
+        .dashboard-grid { padding: 20px; display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
+        .section { display: none; width: 100%; }
         .section.active { display: block; }
-        .widget-container { width: 100%; height: 600px; background: var(--card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 20px; }
-        .stats-bar { height: 150px; margin-bottom: 20px; }
+        
+        .widget-box { background: var(--card); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 20px; }
+        .widget-header { padding: 10px 15px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: var(--text); }
+        
+        .footer-info { padding: 15px 25px; font-size: 0.75rem; color: #5d606b; border-top: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
 <aside>
-    <div class="brand">PRO-TERMINAL</div>
-    <nav>
-        <li class="active" onclick="showTab('tab1', this)"><i class="fas fa-chart-line"></i> Apžvalga</li>
-        <li onclick="showTab('tab2', this)"><i class="fas fa-file-contract"></i> Finansai</li>
-        <li onclick="showTab('tab3', this)"><i class="fas fa-balance-scale"></i> Vertinimas</li>
-        <li onclick="showTab('tab4', this)"><i class="fas fa-newspaper"></i> Naujienos</li>
+    <div class="brand"><i class="fas fa-terminal"></i> TERMINAL V3</div>
+    <nav id="sidebar-nav">
+        <li class="active" data-tab="summary"><i class="fas fa-eye"></i> Apžvalga</li>
+        <li data-tab="financials"><i class="fas fa-file-invoice-dollar"></i> Finansinės ataskaitos</li>
+        <li data-tab="technicals"><i class="fas fa-microchip"></i> Techninė analizė</li>
+        <li data-tab="news"><i class="fas fa-rss"></i> Rinkos srautas</li>
     </nav>
 </aside>
 
 <main>
     <header>
-        <input type="text" id="ticker" value="VNDA" placeholder="Simbolis...">
-        <button onclick="updateAll()">Analizuoti</button>
-        <span id="price-info" style="margin-left: auto; font-weight: bold; color: #22c55e;"></span>
+        <div class="search-container">
+            <input type="text" id="ticker" value="SPGI" onkeyup="if(event.key === 'Enter') updateAll()">
+        </div>
+        <button onclick="updateAll()">ATNAUJINTI DUOMENIS</button>
+        <div id="status-tag" style="font-size: 0.7rem; color: #089981;"><i class="fas fa-circle"></i> TIESIOGINIS RYŠYS</div>
     </header>
 
-    <div class="content">
-        <div id="tab1" class="section active">
-            <div class="widget-container" style="height: 120px; border: none; background: transparent;">
-                <div id="tv-mini-info"></div>
+    <div class="dashboard-grid">
+        <div class="main-column">
+            <div id="summary" class="section active">
+                <div class="widget-box" style="height: 500px;">
+                    <div class="widget-header">Interaktyvus grafikas</div>
+                    <div id="tv-main-chart" style="height: calc(100% - 37px);"></div>
+                </div>
+                <div class="widget-box" style="height: 450px;">
+                    <div class="widget-header">Fundamentalūs rodikliai (Valuation, Dividends, Margins)</div>
+                    <div id="tv-fundamentals" style="height: calc(100% - 37px);"></div>
+                </div>
             </div>
-            <div class="widget-container" id="tv-main-chart"></div>
+
+            <div id="financials" class="section">
+                <div class="widget-box" style="height: 800px;">
+                    <div class="widget-header">Išsami finansinė ataskaita (P/L, BS, CF)</div>
+                    <div id="tv-detailed-fin" style="height: calc(100% - 37px);"></div>
+                </div>
+            </div>
+
+            <div id="technicals" class="section">
+                <div class="widget-box" style="height: 450px;">
+                    <div class="widget-header">Techniniai indikatoriai</div>
+                    <div id="tv-tech-gauge" style="height: calc(100% - 37px);"></div>
+                </div>
+            </div>
+
+            <div id="news" class="section">
+                <div class="widget-box" style="height: 800px;">
+                    <div class="widget-header">Realaus laiko naujienų srautas</div>
+                    <div id="tv-news-feed" style="height: calc(100% - 37px);"></div>
+                </div>
+            </div>
         </div>
 
-        <div id="tab2" class="section">
-            <div class="widget-container" id="tv-financials"></div>
+        <div class="side-column">
+            <div class="widget-box" style="height: 200px;">
+                <div class="widget-header">Įmonės profilis</div>
+                <div id="tv-profile" style="height: calc(100% - 37px);"></div>
+            </div>
+            <div class="widget-box" style="height: 500px;">
+                <div class="widget-header">Panašios akcijos (Sektorius)</div>
+                <div id="tv-screener" style="height: calc(100% - 37px);"></div>
+            </div>
         </div>
+    </div>
 
-        <div id="tab3" class="section">
-            <div class="widget-container" id="tv-technical"></div>
-        </div>
-
-        <div id="tab4" class="section">
-            <div class="widget-container" id="tv-news"></div>
-        </div>
+    <div class="footer-info">
+        Duomenys teikiami tiesiogiai iš NYSE/NASDAQ per TradingView API. Analizė atliekama realiu laiku.
     </div>
 </main>
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    function showTab(id, el) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('nav li').forEach(l => l.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
-    }
+    // Tabų valdymas
+    document.querySelectorAll('#sidebar-nav li').forEach(li => {
+        li.addEventListener('click', () => {
+            document.querySelectorAll('#sidebar-nav li').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            li.classList.add('active');
+            document.getElementById(li.dataset.tab).classList.add('active');
+            updateAll(); // Perkraunam widgetus, kad prisitaikytų prie dydžio
+        });
+    });
 
     function updateAll() {
-        const symbol = document.getElementById('ticker').value.toUpperCase();
+        let symbol = document.getElementById('ticker').value.toUpperCase();
+        // Jei vartotojas neįvedė biržos, bandom spėti (daugumai JAV akcijų tinka NYSE arba NASDAQ)
+        // Realiame analitiko darbe geriausia įvesti "NYSE:SPGI"
         
-        // 1. Pagrindinis grafikas
+        // 1. Pagrindinis grafikas su indikatoriais
         new TradingView.widget({
             "autosize": true, "symbol": symbol, "interval": "D", "timezone": "Etc/UTC",
-            "theme": "dark", "style": "1", "locale": "lt", "container_id": "tv-main-chart"
+            "theme": "dark", "style": "1", "locale": "lt", "enable_publishing": false,
+            "hide_top_toolbar": false, "container_id": "tv-main-chart"
         });
 
-        // 2. Mini Info Baras (Market Cap, P/E ir t.t. - TIKRI DUOMENYS)
-        renderWidget("tv-mini-info", "symbol-info", { "symbol": symbol, "width": "100%", "locale": "lt" });
+        // 2. Įmonės profilis
+        renderWidget("tv-profile", "symbol-profile", { "symbol": symbol, "width": "100%", "height": "100%" });
 
-        // 3. Finansinės ataskaitos (Pajamos, Pelno nuostolio ataskaita)
-        renderWidget("tv-financials", "fundamental-data", { "symbol": symbol, "displayMode": "regular", "width": "100%", "height": "100%" });
+        // 3. Išsamūs fundamentalūs rodikliai (Štai čia yra skaičiai!)
+        renderWidget("tv-fundamentals", "fundamental-data", { "symbol": symbol, "displayMode": "regular", "width": "100%", "height": "100%" });
 
-        // 4. Techninis vertinimas (Buy/Sell signalai)
-        renderWidget("tv-technical", "technical-analysis", { "symbol": symbol, "interval": "1D", "width": "100%", "height": "100%" });
+        // 4. Finansinės ataskaitos (Tab'as 2)
+        renderWidget("tv-detailed-fin", "financials", { "symbol": symbol, "displayMode": "regular", "width": "100%", "height": "100%" });
 
-        // 5. Naujienos (Tikros to simbolio naujienos)
-        renderWidget("tv-news", "timeline", { "symbol": symbol, "width": "100%", "height": "100%" });
+        // 5. Techninė analizė
+        renderWidget("tv-tech-gauge", "technical-analysis", { "symbol": symbol, "interval": "1D", "width": "100%", "height": "100%" });
+
+        // 6. Naujienos (HEADLINES - geriau veikia nei timeline)
+        renderWidget("tv-news-feed", "timeline", { "symbol": symbol, "width": "100%", "height": "100%" });
+
+        // 7. Screeneris (Sektoriaus palyginimas)
+        renderWidget("tv-screener", "market-overview", { 
+            "symbolsGroups": [{ "name": "Sektorius", "symbols": [{ "name": symbol }] }],
+            "width": "100%", "height": "100%", "showSymbolLogo": true
+        });
     }
 
     function renderWidget(containerId, type, config) {
