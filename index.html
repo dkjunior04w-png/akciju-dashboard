@@ -3,303 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProStock AI | Terminalas</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>ProTerminal | Real-Time</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-body: #0a0e17;
-            --bg-sidebar: #131722;
-            --bg-card: #1e222d;
-            --accent: #2962ff;
-            --text-main: #d1d4dc;
-            --text-muted: #787b86;
-            --border: #363a45;
-            --success: #089981;
-            --danger: #f23645;
-        }
-
+        :root { --bg: #0a0e17; --sidebar: #131722; --card: #1e222d; --accent: #2962ff; --text: #d1d4dc; --border: #363a45; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Trebuchet MS', sans-serif; }
-        body { background: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-
-        /* Sidebar */
-        aside {
-            width: 240px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            z-index: 10;
-        }
-
-        .brand { padding: 25px; font-size: 1.4rem; font-weight: bold; color: white; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
-        .brand i { color: var(--accent); }
-
+        body { background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+        aside { width: 240px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .brand { padding: 25px; font-size: 1.4rem; font-weight: bold; color: white; border-bottom: 1px solid var(--border); }
         nav { flex: 1; padding: 20px 10px; }
-        nav ul { list-style: none; }
-        nav li {
-            padding: 12px 15px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.2s;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        nav li:hover { background: #2a2e39; color: white; }
+        nav li { padding: 12px 15px; margin-bottom: 8px; cursor: pointer; border-radius: 6px; color: #787b86; display: flex; align-items: center; gap: 12px; }
         nav li.active { background: var(--accent); color: white; }
-
-        /* Main Content */
-        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
-
-        header {
-            padding: 15px 30px;
-            background: var(--bg-sidebar);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 5;
-        }
-
-        .search-area { display: flex; gap: 12px; align-items: center; }
-        .search-area input {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            padding: 10px 15px;
-            border-radius: 4px;
-            color: white;
-            width: 250px;
-            outline: none;
-        }
-        .search-area button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .content-padding { padding: 30px; }
-
-        /* Grid System */
-        .section-view { display: none; animation: fadeIn 0.4s ease; }
-        .section-view.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .card { background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        
-        /* Widget Containers */
-        .tv-widget { height: 500px; width: 100%; border-radius: 8px; overflow: hidden; }
-        
-        .stat-box h4 { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px; }
-        .stat-box .val { font-size: 1.6rem; font-weight: bold; }
-        .stat-box .change { font-size: 0.9rem; margin-top: 5px; }
-        .up { color: var(--success); }
-        .down { color: var(--danger); }
-
-        /* AI Inference Styling */
-        .ai-badge { background: #311b92; color: #b39ddb; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        header { padding: 15px 30px; background: var(--sidebar); border-bottom: 1px solid var(--border); display: flex; gap: 15px; align-items: center; position: sticky; top: 0; z-index: 10; }
+        input { background: var(--card); border: 1px solid var(--border); padding: 10px; border-radius: 4px; color: white; width: 200px; }
+        button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .content { padding: 20px; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .widget-container { width: 100%; height: 600px; background: var(--card); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 20px; }
+        .stats-bar { height: 150px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <aside>
-    <div class="brand"><i class="fas fa-rocket"></i> PRO-TERMINAL</div>
+    <div class="brand">PRO-TERMINAL</div>
     <nav>
-        <ul>
-            <li class="active" onclick="showTab('overview', this)"><i class="fas fa-chart-pie"></i> Apžvalga</li>
-            <li onclick="showTab('financials', this)"><i class="fas fa-file-invoice-dollar"></i> Finansinės ataskaitos</li>
-            <li onclick="showTab('growth', this)"><i class="fas fa-chart-line"></i> Augimo rodikliai</li>
-            <li onclick="showTab('valuation', this)"><i class="fas fa-balance-scale"></i> Vertinimas</li>
-            <li onclick="showTab('news', this)"><i class="fas fa-newspaper"></i> Naujienos</li>
-            <li onclick="showTab('ai', this)"><i class="fas fa-brain"></i> AI Išvada</li>
-        </ul>
+        <li class="active" onclick="showTab('tab1', this)"><i class="fas fa-chart-line"></i> Apžvalga</li>
+        <li onclick="showTab('tab2', this)"><i class="fas fa-file-contract"></i> Finansai</li>
+        <li onclick="showTab('tab3', this)"><i class="fas fa-balance-scale"></i> Vertinimas</li>
+        <li onclick="showTab('tab4', this)"><i class="fas fa-newspaper"></i> Naujienos</li>
     </nav>
 </aside>
 
 <main>
     <header>
-        <div class="search-area">
-            <input type="text" id="tickerInput" placeholder="Įveskite simbolį (pvz. NVDA, AAPL)" value="AAPL">
-            <button onclick="updateDashboard()">Analizuoti</button>
-        </div>
-        <div id="lastUpdated" style="font-size: 0.8rem; color: var(--text-muted);">Real-time data</div>
+        <input type="text" id="ticker" value="VNDA" placeholder="Simbolis...">
+        <button onclick="updateAll()">Analizuoti</button>
+        <span id="price-info" style="margin-left: auto; font-weight: bold; color: #22c55e;"></span>
     </header>
 
-    <div class="content-padding">
-        <div id="overview" class="section-view active">
-            <div class="grid-3" style="margin-bottom: 20px;">
-                <div class="card stat-box">
-                    <h4>Rinkos kaina</h4>
-                    <div class="val" id="curPrice">--</div>
-                    <div class="change up" id="curChange">--</div>
-                </div>
-                <div class="card stat-box">
-                    <h4>Analitikų tikslas (12m)</h4>
-                    <div class="val" id="targetPrice">--</div>
-                    <div class="change" style="color: var(--text-muted)">Consensus: Strong Buy</div>
-                </div>
-                <div class="card stat-box">
-                    <h4>Market Cap</h4>
-                    <div class="val" id="mCap">--</div>
-                </div>
+    <div class="content">
+        <div id="tab1" class="section active">
+            <div class="widget-container" style="height: 120px; border: none; background: transparent;">
+                <div id="tv-mini-info"></div>
             </div>
-            <div class="card tv-widget" id="chart_container">
-                </div>
+            <div class="widget-container" id="tv-main-chart"></div>
         </div>
 
-        <div id="financials" class="section-view">
-            <div class="card">
-                <h3>Pajamų ir pelno dinamika (10m)</h3>
-                <canvas id="finChart" style="max-height: 400px;"></canvas>
-            </div>
-            <div class="grid-3">
-                <div class="card"><h4>P/E Ratio</h4><p class="val" id="peVal">--</p></div>
-                <div class="card"><h4>EPS (TTM)</h4><p class="val" id="epsVal">--</p></div>
-                <div class="card"><h4>Div. Yield</h4><p class="val" id="divVal">--</p></div>
-            </div>
+        <div id="tab2" class="section">
+            <div class="widget-container" id="tv-financials"></div>
         </div>
 
-        <div id="growth" class="section-view">
-            <div class="card">
-                <h3>Fundamentalus augimas (YoY)</h3>
-                <canvas id="growthChart" style="max-height: 400px;"></canvas>
-            </div>
+        <div id="tab3" class="section">
+            <div class="widget-container" id="tv-technical"></div>
         </div>
 
-        <div id="valuation" class="section-view">
-            <div class="card" style="text-align: center; padding: 50px;">
-                <h2 id="valuationTitle">Vidinės vertės (DCF) modeliavimas</h2>
-                <div style="font-size: 3rem; margin: 20px 0; color: var(--success);" id="dcfValue">--</div>
-                <p id="valuationStatus">Akcija prekiaujama su nuolaida vidinės vertės atžvilgiu.</p>
-            </div>
-        </div>
-
-        <div id="news" class="section-view">
-            <div id="tradingview_news"></div>
-        </div>
-
-        <div id="ai" class="section-view">
-            <div class="card" style="border-left: 5px solid var(--accent);">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h3>Sisteminė AI Analizė <span class="ai-badge">V2.1 BETA</span></h3>
-                </div>
-                <div id="aiResponse" style="margin-top: 20px; line-height: 1.8; font-size: 1.1rem;">
-                    Analizuojami techniniai ir fundamentalūs duomenys...
-                </div>
-            </div>
+        <div id="tab4" class="section">
+            <div class="widget-container" id="tv-news"></div>
         </div>
     </div>
 </main>
 
 <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
 <script>
-    let currentTicker = "AAPL";
-
-    function showTab(tabId, el) {
-        document.querySelectorAll('.section-view').forEach(v => v.classList.remove('active'));
+    function showTab(id, el) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('nav li').forEach(l => l.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
+        document.getElementById(id).classList.add('active');
         el.classList.add('active');
+    }
+
+    function updateAll() {
+        const symbol = document.getElementById('ticker').value.toUpperCase();
         
-        // Specifinis valdiklių perkrovimas jei reikia
-        if(tabId === 'news') loadNews();
-    }
-
-    function updateDashboard() {
-        currentTicker = document.getElementById('tickerInput').value.toUpperCase();
-        loadMainChart();
-        simulateData();
-        generateAIConclusion();
-    }
-
-    function loadMainChart() {
+        // 1. Pagrindinis grafikas
         new TradingView.widget({
-            "autosize": true,
-            "symbol": currentTicker,
-            "interval": "D",
-            "timezone": "Etc/UTC",
-            "theme": "dark",
-            "style": "1",
-            "locale": "lt",
-            "toolbar_bg": "#f1f3f6",
-            "enable_publishing": false,
-            "hide_side_toolbar": false,
-            "allow_symbol_change": true,
-            "container_id": "chart_container"
+            "autosize": true, "symbol": symbol, "interval": "D", "timezone": "Etc/UTC",
+            "theme": "dark", "style": "1", "locale": "lt", "container_id": "tv-main-chart"
         });
+
+        // 2. Mini Info Baras (Market Cap, P/E ir t.t. - TIKRI DUOMENYS)
+        renderWidget("tv-mini-info", "symbol-info", { "symbol": symbol, "width": "100%", "locale": "lt" });
+
+        // 3. Finansinės ataskaitos (Pajamos, Pelno nuostolio ataskaita)
+        renderWidget("tv-financials", "fundamental-data", { "symbol": symbol, "displayMode": "regular", "width": "100%", "height": "100%" });
+
+        // 4. Techninis vertinimas (Buy/Sell signalai)
+        renderWidget("tv-technical", "technical-analysis", { "symbol": symbol, "interval": "1D", "width": "100%", "height": "100%" });
+
+        // 5. Naujienos (Tikros to simbolio naujienos)
+        renderWidget("tv-news", "timeline", { "symbol": symbol, "width": "100%", "height": "100%" });
     }
 
-    function loadNews() {
-        const container = document.getElementById('tradingview_news');
+    function renderWidget(containerId, type, config) {
+        const container = document.getElementById(containerId);
         container.innerHTML = "";
         const script = document.createElement('script');
-        script.src = "https://s3.tradingview.com/external-embedding/embed-widget-timeline.js";
+        script.src = `https://s3.tradingview.com/external-embedding/embed-widget-${type}.js`;
+        script.type = 'text/javascript';
         script.async = true;
-        script.innerHTML = JSON.stringify({
-            "feedMode": "symbol",
-            "symbol": currentTicker,
-            "colorTheme": "dark",
-            "isTransparent": true,
-            "displayMode": "regular",
-            "width": "100%",
-            "height": "600",
-            "locale": "lt"
-        });
+        config.colorTheme = "dark";
+        config.isTransparent = true;
+        script.innerHTML = JSON.stringify(config);
         container.appendChild(script);
     }
 
-    function simulateData() {
-        // Imituojame skaičius (realiame projekte čia būtų fetch užklausa)
-        document.getElementById('curPrice').innerText = "$" + (Math.random() * 200 + 100).toFixed(2);
-        document.getElementById('mCap').innerText = (Math.random() * 3).toFixed(2) + "T USD";
-        document.getElementById('targetPrice').innerText = "$" + (Math.random() * 50 + 200).toFixed(2);
-        document.getElementById('peVal').innerText = (Math.random() * 15 + 20).toFixed(2);
-        document.getElementById('epsVal').innerText = (Math.random() * 5 + 2).toFixed(2);
-        document.getElementById('divVal').innerText = (Math.random() * 2).toFixed(2) + "%";
-        document.getElementById('dcfValue').innerText = "$" + (Math.random() * 100 + 150).toFixed(2);
-        
-        renderCharts();
-    }
-
-    function renderCharts() {
-        const ctx = document.getElementById('finChart').getContext('2d');
-        if(window.myChart1) window.myChart1.destroy();
-        window.myChart1 = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'],
-                datasets: [{
-                    label: 'Pajamos (Bln)',
-                    data: [265, 260, 274, 365, 394, 383, 391, 405],
-                    backgroundColor: '#2962ff'
-                }]
-            },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#787b86' } } } }
-        });
-    }
-
-    function generateAIConclusion() {
-        const conclusions = [
-            `Remiantis ${currentTicker} fundamentais, įmonė išlaiko itin stiprią pinigų srautų poziciją. Nors P/E santykis yra šiek tiek aukštesnis už sektoriaus vidurkį, augimo potencialas AI srityje pateisina dabartinį vertinimą. Rekomendacija: **AKUMULIUOTI**.`,
-            `${currentTicker} rodo techninio nuovargio požymius. Nors pajamos auga, maržos pradėjo trauktis dėl didėjančių gamybos kaštų. Rekomendacija: **LAIKYTI** ir laukti geresnio įėjimo taško.`,
-            `Analizė rodo, kad ${currentTicker} šiuo metu yra pervertinta lyginant su jos 10 metų DCF modeliu. Instituciniai investuotojai mažina pozicijas. Rekomendacija: **PARDUOTI / MAŽINTI SVORĮ**.`
-        ];
-        document.getElementById('aiResponse').innerHTML = conclusions[Math.floor(Math.random() * conclusions.length)];
-    }
-
-    // Paleidžiame pirmą kartą
-    window.onload = updateDashboard;
+    window.onload = updateAll;
 </script>
-
 </body>
 </html>
