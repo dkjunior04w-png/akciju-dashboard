@@ -1,157 +1,1864 @@
 <!DOCTYPE html>
 <html lang="lt">
 <head>
-    <meta charset="UTF-8">
-    <title>INVESTOR TERMINAL v7 | Professional</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root { --bg: #0a0e14; --side: #131722; --card: #1e222d; --accent: #2962ff; --text: #d1d4dc; --border: #2a2e39; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+  <meta charset="UTF-8" />
+  <title>Akcijų analizės dashboard'as</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #050816;
+      --bg-alt: #0b1020;
+      --accent: #4f46e5;
+      --accent-soft: rgba(79, 70, 229, 0.2);
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2933;
+      --danger: #f97373;
+      --success: #4ade80;
+      --warning: #facc15;
+    }
 
-        /* Sidebar */
-        aside { width: 220px; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .logo { padding: 20px; font-weight: 800; color: white; border-bottom: 1px solid var(--border); text-align: center; }
-        nav { flex: 1; padding: 15px 10px; }
-        nav li { padding: 12px 15px; margin-bottom: 5px; cursor: pointer; border-radius: 6px; list-style: none; color: #787b86; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-        nav li:hover, nav li.active { background: var(--accent); color: white; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
 
-        /* Main Content */
-        main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        header { padding: 15px 25px; background: var(--side); border-bottom: 1px solid var(--border); display: flex; gap: 15px; align-items: center; position: sticky; top: 0; z-index: 10; }
-        input { background: var(--card); border: 1px solid var(--border); padding: 10px; border-radius: 4px; color: white; width: 150px; font-weight: bold; }
-        button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    body {
+      background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
 
-        .container { padding: 20px; }
-        .section { display: none; width: 100%; }
-        .section.active { display: block; }
-        
-        .widget-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; height: 600px; }
-        .label { padding: 10px 15px; background: rgba(255,255,255,0.03); font-size: 0.7rem; font-weight: bold; color: #787b86; border-bottom: 1px solid var(--border); text-transform: uppercase; }
-        
-        .small-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .h-400 { height: 400px; }
-    </style>
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(180deg, #020617 0, #020617 40%, #020617 100%);
+      border-right: 1px solid var(--border);
+      padding: 20px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 30% 20%, #4f46e5, #22c55e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: #e5e7eb;
+    }
+
+    .logo-text-main {
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .logo-text-sub {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .ticker-input-block {
+      margin-top: 8px;
+      padding: 10px;
+      border-radius: 12px;
+      background: radial-gradient(circle at top left, #111827, #020617);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ticker-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .ticker-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .ticker-row input {
+      flex: 1;
+      background: #020617;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .ticker-row input::placeholder {
+      color: #4b5563;
+    }
+
+    .ticker-row button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: linear-gradient(135deg, #4f46e5, #22c55e);
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .ticker-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .nav-section-title {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .nav {
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav button {
+      width: 100%;
+      text-align: left;
+      border-radius: 10px;
+      border: none;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav button span.icon {
+      width: 18px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .nav button.active,
+    .nav button:hover {
+      background: rgba(79, 70, 229, 0.16);
+      color: var(--text);
+    }
+
+    .nav-footer {
+      margin-top: auto;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    .nav-footer span {
+      color: var(--accent);
+    }
+
+    .main {
+      flex: 1;
+      padding: 18px 22px;
+      overflow-y: auto;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .top-bar-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .top-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .top-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .badge-live {
+      border-color: rgba(248, 113, 113, 0.6);
+      color: #fecaca;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #f97373;
+      box-shadow: 0 0 8px rgba(248, 113, 113, 0.9);
+    }
+
+    .content-card {
+      background: radial-gradient(circle at top left, #020617, #020617 40%, #020617 100%);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 16px 18px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .section-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .section-tools {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .section-tools button {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      font-size: 11px;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .section-tools button:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .metric-card {
+      background: radial-gradient(circle at top left, #020617, #020617 40%, #020617 100%);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .metric-value {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .metric-sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .metric-tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .metric-tag.buy {
+      border-color: rgba(74, 222, 128, 0.6);
+      color: #bbf7d0;
+    }
+
+    .metric-tag.hold {
+      border-color: rgba(250, 204, 21, 0.6);
+      color: #fef3c7;
+    }
+
+    .metric-tag.sell {
+      border-color: rgba(248, 113, 113, 0.6);
+      color: #fecaca;
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .flex-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chart-card {
+      background: radial-gradient(circle at top left, #020617, #020617 40%, #020617 100%);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+    }
+
+    .chart-title {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .news-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .news-item {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .news-title {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .news-meta {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .news-summary {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .ai-summary {
+      margin-top: 6px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.9);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .ai-summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      border: 1px solid var(--border);
+    }
+
+    .pill-buy {
+      border-color: rgba(74, 222, 128, 0.6);
+      color: #bbf7d0;
+    }
+
+    .pill-hold {
+      border-color: rgba(250, 204, 21, 0.6);
+      color: #fef3c7;
+    }
+
+    .pill-sell {
+      border-color: rgba(248, 113, 113, 0.6);
+      color: #fecaca;
+    }
+
+    .status-bar {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status-bar span.status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #4b5563;
+    }
+
+    .status-dot.loading {
+      background: #facc15;
+      box-shadow: 0 0 8px rgba(250, 204, 21, 0.9);
+    }
+
+    .status-dot.ok {
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.9);
+    }
+
+    .status-dot.error {
+      background: #f97373;
+      box-shadow: 0 0 8px rgba(248, 113, 113, 0.9);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 960px) {
+      body {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .main {
+        padding: 14px;
+      }
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .flex-row {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<aside>
-    <div class="logo">PRO TERMINAL</div>
-    <nav id="menu">
-        <li class="active" data-section="overview"><i class="fas fa-chart-line"></i> Apžvalga</li>
-        <li data-section="financials"><i class="fas fa-file-invoice-dollar"></i> Finansai (5 m.)</li>
-        <li data-section="analysis"><i class="fas fa-microchip"></i> Vertinimas</li>
-        <li data-section="news"><i class="fas fa-rss"></i> Naujienos</li>
-    </nav>
-</aside>
-
-<main>
-    <header>
-        <input type="text" id="symbolInput" value="VNDA" placeholder="SIMBOLIS...">
-        <button onclick="updateAll()">ANALIZUOTI</button>
-        <div style="margin-left: auto; font-size: 0.8rem; color: #089981;"><i class="fas fa-circle"></i> RYŠYS AKTYVUS</div>
-    </header>
-
-    <div class="container">
-        <div id="overview" class="section active">
-            <div class="widget-box" style="height: 100px; border: none; background: transparent;">
-                <div id="tv-mini"></div>
-            </div>
-            <div class="widget-box">
-                <div class="label">Kainos grafikas</div>
-                <div id="tv-chart" style="height: calc(100% - 35px);"></div>
-            </div>
-            <div class="widget-box h-400">
-                <div class="label">Įmonės profilis</div>
-                <div id="tv-profile" style="height: calc(100% - 35px);"></div>
-            </div>
+  <!-- ŠONINĖ NAVIGACIJA -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo">
+        <div class="logo-icon">AI</div>
+        <div>
+          <div class="logo-text-main">Equity Intel</div>
+          <div class="logo-text-sub">AI akcijų analizė</div>
         </div>
+      </div>
 
-        <div id="financials" class="section">
-            <div class="widget-box" style="height: 700px;">
-                <div class="label">Pajamų ir Pelno tendencijos (Paspauskite "Income Statement")</div>
-                <div id="tv-fin" style="height: calc(100% - 35px);"></div>
-            </div>
+      <div class="ticker-input-block">
+        <div class="ticker-label">Akcijos tikeris</div>
+        <div class="ticker-row">
+          <input id="tickerInput" type="text" placeholder="pvz. AAPL, TSLA" />
+          <button id="loadBtn">
+            <span>Analizuoti</span>
+          </button>
         </div>
-
-        <div id="analysis" class="section">
-            <div class="small-grid">
-                <div class="widget-box h-400">
-                    <div class="label">Techninis indikatorius</div>
-                    <div id="tv-tech" style="height: calc(100% - 35px);"></div>
-                </div>
-                <div class="widget-box h-400">
-                    <div class="label">Fundamentalūs duomenys</div>
-                    <div id="tv-fund" style="height: calc(100% - 35px);"></div>
-                </div>
-            </div>
+        <div class="ticker-meta">
+          <span id="currentTicker">Tikeris nepasirinktas</span>
+          <span id="lastUpdated">Atnaujinta: –</span>
         </div>
-
-        <div id="news" class="section">
-            <div class="widget-box" style="height: 800px;">
-                <div class="label">Naujausios rinkos naujienos</div>
-                <div id="tv-news" style="height: calc(100% - 35px);"></div>
-            </div>
-        </div>
+      </div>
     </div>
-</main>
 
-<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-<script>
-    // Skyrių perjungimo logika
-    document.querySelectorAll('#menu li').forEach(li => {
-        li.addEventListener('click', function() {
-            document.querySelectorAll('#menu li').forEach(item => item.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-            
-            this.classList.add('active');
-            document.getElementById(this.dataset.section).classList.add('active');
-            updateAll(); // Perkrauname grafikus, kad jie prisitaikytų prie naujo matomumo
-        });
+    <div>
+      <div class="nav-section-title">Skyriai</div>
+      <nav class="nav" id="nav">
+        <button data-section="overview" class="active">
+          <span class="icon">📊</span> Apžvalga
+        </button>
+        <button data-section="financials">
+          <span class="icon">📈</span> Finansinės ataskaitos
+        </button>
+        <button data-section="earnings">
+          <span class="icon">💹</span> Pajamos ir uždarbiai
+        </button>
+        <button data-section="growth">
+          <span class="icon">🚀</span> Augimo rodikliai
+        </button>
+        <button data-section="valuation">
+          <span class="icon">💰</span> Vertinimas
+        </button>
+        <button data-section="news">
+          <span class="icon">📰</span> Naujienos
+        </button>
+        <button data-section="conclusion">
+          <span class="icon">✅</span> Investicinė išvada
+        </button>
+      </nav>
+    </div>
+
+    <div class="nav-footer">
+      Duomenys generuojami per <span>Anthropic API</span> su realaus laiko paieška.
+    </div>
+  </aside>
+
+  <!-- PAGRINDINIS TURINYS -->
+  <main class="main">
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <div class="top-title" id="pageTitle">Apžvalga</div>
+        <div class="top-subtitle" id="pageSubtitle">
+          Įveskite akcijos tikerį ir gaukite profesionalią AI analizę.
+        </div>
+      </div>
+      <div class="top-bar-right">
+        <div class="badge badge-live">
+          <span class="badge-live-dot"></span> Gyvi duomenys (web search)
+        </div>
+        <div class="badge">Modelis: Anthropic „claude-sonnet-4-20250514“</div>
+      </div>
+    </div>
+
+    <!-- APŽVALGA -->
+    <section id="section-overview" class="content-card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Apžvalga</div>
+          <div class="section-subtitle">
+            Dabartinė kaina, analitikų konsensusas ir pagrindiniai rodikliai.
+          </div>
+        </div>
+        <div class="section-tools">
+          <button id="refreshOverview">Atnaujinti</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="metric-card">
+          <div class="metric-label">Dabartinė kaina</div>
+          <div class="metric-value" id="ovPrice">–</div>
+          <div class="metric-sub" id="ovPriceChange">–</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">12 mėn. tikslinė kaina</div>
+          <div class="metric-value" id="ovTargetPrice">–</div>
+          <div class="metric-sub" id="ovUpside">–</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Rekomendacijos</div>
+          <div class="metric-value" id="ovRatingRatio">–</div>
+          <div class="metric-sub">
+            <span class="metric-tag buy" id="ovBuy">Buy: –</span>
+            <span class="metric-tag hold" id="ovHold">Hold: –</span>
+            <span class="metric-tag sell" id="ovSell">Sell: –</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Rinkos kapitalizacija</div>
+          <div class="metric-value" id="ovMarketCap">–</div>
+          <div class="metric-sub" id="ovSector">Sektorius: –</div>
+        </div>
+      </div>
+
+      <div class="flex-row">
+        <div class="flex-col">
+          <div class="metric-card">
+            <div class="metric-label">P/E</div>
+            <div class="metric-value" id="ovPE">–</div>
+            <div class="metric-sub" id="ovPESector">vs sektoriaus vidurkis: –</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">EPS</div>
+            <div class="metric-value" id="ovEPS">–</div>
+            <div class="metric-sub" id="ovEPSGrowth">EPS augimas: –</div>
+          </div>
+        </div>
+        <div class="flex-col">
+          <div class="metric-card">
+            <div class="metric-label">52 sav. min / max</div>
+            <div class="metric-value" id="ov52w">–</div>
+            <div class="metric-sub" id="ov52wRange">–</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Likvidumas / volatilumas</div>
+            <div class="metric-value" id="ovVolume">–</div>
+            <div class="metric-sub" id="ovBeta">Beta: –</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <span class="status">
+          <span class="status-dot" id="statusOverviewDot"></span>
+          <span id="statusOverviewText">Laukiama tikerio...</span>
+        </span>
+        <span id="statusOverviewSource">Šaltinis: web_search + analitikų konsensusas</span>
+      </div>
+    </section>
+
+    <!-- FINANSINĖS ATASKAITOS -->
+    <section id="section-financials" class="content-card hidden">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Finansinės ataskaitos (10 metų)</div>
+          <div class="section-subtitle">
+            Pajamos, grynasis pelnas, EBITDA ir EPS dinamika per 10 metų.
+          </div>
+        </div>
+        <div class="section-tools">
+          <button id="refreshFinancials">Atnaujinti</button>
+        </div>
+      </div>
+
+      <div class="flex-row">
+        <div class="flex-col">
+          <div class="chart-card">
+            <div class="chart-title">Pajamos ir grynasis pelnas (metai)</div>
+            <canvas id="chartRevenueNet"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">EBITDA (metai)</div>
+            <canvas id="chartEBITDA"></canvas>
+          </div>
+        </div>
+        <div class="flex-col">
+          <div class="chart-card">
+            <div class="chart-title">EPS (metai)</div>
+            <canvas id="chartEPS"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <span class="status">
+          <span class="status-dot" id="statusFinancialsDot"></span>
+          <span id="statusFinancialsText">Laukiama tikerio...</span>
+        </span>
+        <span>Šaltinis: metinės 10-K / 20-F ataskaitos</span>
+      </div>
+    </section>
+
+    <!-- PAJAMOS IR UŽDARBIAI -->
+    <section id="section-earnings" class="content-card hidden">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Pajamos ir uždarbiai</div>
+          <div class="section-subtitle">
+            Ketvirčių EPS istorija vs. lūkesčiai ir sekančio ketvirčio prognozė.
+          </div>
+        </div>
+        <div class="section-tools">
+          <button id="refreshEarnings">Atnaujinti</button>
+        </div>
+      </div>
+
+      <div class="flex-row">
+        <div class="flex-col">
+          <div class="chart-card">
+            <div class="chart-title">EPS vs. analitikų lūkesčiai (ketvirčiai)</div>
+            <canvas id="chartEarnings"></canvas>
+          </div>
+        </div>
+        <div class="flex-col">
+          <div class="metric-card">
+            <div class="metric-label">Sekančio ketvirčio prognozė</div>
+            <div class="metric-value" id="earnNextEPS">–</div>
+            <div class="metric-sub" id="earnNextDate">Ataskaitos data: –</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">„Beat / miss“ statistika</div>
+            <div class="metric-sub" id="earnBeatMiss">–</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <span class="status">
+          <span class="status-dot" id="statusEarningsDot"></span>
+          <span id="statusEarningsText">Laukiama tikerio...</span>
+        </span>
+        <span>Šaltinis: ketvirtinės ataskaitos, analitikų konsensusas</span>
+      </div>
+    </section>
+
+    <!-- AUGIMO RODIKLIAI -->
+    <section id="section-growth" class="content-card hidden">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Augimo rodikliai</div>
+          <div class="section-subtitle">
+            Pajamų augimas, maržos, FCF ir skolos struktūra.
+          </div>
+        </div>
+        <div class="section-tools">
+          <button id="refreshGrowth">Atnaujinti</button>
+        </div>
+      </div>
+
+      <div class="flex-row">
+        <div class="flex-col">
+          <div class="chart-card">
+            <div class="chart-title">Pajamų augimas YoY</div>
+            <canvas id="chartGrowthRevenue"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Pelno maržos</div>
+            <canvas id="chartMargins"></canvas>
+          </div>
+        </div>
+        <div class="flex-col">
+          <div class="metric-card">
+            <div class="metric-label">Laisvieji pinigų srautai (FCF)</div>
+            <div class="metric-value" id="growthFCF">–</div>
+            <div class="metric-sub" id="growthFCFTrend">Tendencija: –</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Skolos / nuosavo kapitalo santykis</div>
+            <div class="metric-value" id="growthDebtEquity">–</div>
+            <div class="metric-sub" id="growthLeverage">Svertas: –</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <span class="status">
+          <span class="status-dot" id="statusGrowthDot"></span>
+          <span id="statusGrowthText">Laukiama tikerio...</span>
+        </span>
+        <span>Šaltinis: finansinės ataskaitos, pinigų srautų ataskaita</span>
+      </div>
+    </section>
+
+    <!-- VERTINIMAS -->
+    <section id="section-valuation" class="content-card hidden">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Vertinimas</div>
+          <div class="section-subtitle">
+            P/E, P/S, P/B, EV/EBITDA palyginimas su sektoriaus vidurkiu ir DCF vertė.
+          </div>
+        </div>
+        <div class="section-tools">
+          <button id="refreshValuation">Atnaujinti</button>
+        </div>
+      </div>
+
+      <div class="flex-row">
+        <div class="flex-col">
+          <div class="chart-card">
+            <div class="chart-title">Multiplikatorių palyginimas su sektoriaus vidurkiu</div>
+            <canvas id="chartMultiples"></canvas>
+          </div>
+        </div>
+        <div class="flex-col">
+          <div class="metric-card">
+            <div class="metric-label">DCF tikslinė vertė</div>
+            <div class="metric-value" id="valDCF">–</div>
+            <div class="metric-sub" id="valDCFAssumptions">Pagrindinės prielaidos: –</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Diskontas / premija</div>
+            <div class="metric-value" id="valDiscount">–</div>
+            <div class="metric-sub" id="valRisk">Rizikos profilis: –</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <span class="status">
+          <span class="status-dot" id="statusValuationDot"></span>
+          <span id="statusValuationText">Laukiama tikerio...</span>
+        </span>
+        <span>Šaltinis: rinkos duomenys, sektoriaus vidurkiai, DCF modelis</span>
+      </div>
+    </section>
+
+    <!-- NAUJIENOS -->
+    <section id="section-news" class="content-card hidden">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Naujienos</div>
+          <div class="section-subtitle">
+            10 naujausių naujienų apie įmonę su santraukomis.
+          </div>
+        </div>
+        <div class="section-tools">
+          <button id="refreshNews">Atnaujinti</button>
+        </div>
+      </div>
+
+      <div class="news-list" id="newsList"></div>
+
+      <div class="status-bar">
+        <span class="status">
+          <span class="status-dot" id="statusNewsDot"></span>
+          <span id="statusNewsText">Laukiama tikerio...</span>
+        </span>
+        <span>Šaltinis: realaus laiko naujienų paieška (web_search)</span>
+      </div>
+    </section>
+
+    <!-- INVESTICINĖ IŠVADA -->
+    <section id="section-conclusion" class="content-card hidden">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Investicinė išvada</div>
+          <div class="section-subtitle">
+            AI sugeneruota rekomendacija su pagrindiniais argumentais.
+          </div>
+        </div>
+        <div class="section-tools">
+          <button id="refreshConclusion">Atnaujinti</button>
+        </div>
+      </div>
+
+      <div class="ai-summary">
+        <div class="ai-summary-header">
+          <span>AI investicinė išvada</span>
+          <span id="conclusionBadge" class="pill">–</span>
+        </div>
+        <div id="conclusionText">
+          Įveskite tikerį ir sugeneruokite AI investicinę išvadą.
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <span class="status">
+          <span class="status-dot" id="statusConclusionDot"></span>
+          <span id="statusConclusionText">Laukiama tikerio...</span>
+        </span>
+        <span>Pastaba: tai nėra asmeninė investicinė rekomendacija</span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ==========================
+    // KONFIGŪRACIJA
+    // ==========================
+    const ANTHROPIC_API_KEY = "ĮRAŠYKITE_SAVO_ANTHROPIC_API_KEY";
+    const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+    const ANTHROPIC_MODEL = "claude-sonnet-4-20250514";
+
+    // ==========================
+    // BENDRA LOGIKA
+    // ==========================
+    const tickerInput = document.getElementById("tickerInput");
+    const loadBtn = document.getElementById("loadBtn");
+    const currentTickerEl = document.getElementById("currentTicker");
+    const lastUpdatedEl = document.getElementById("lastUpdated");
+    const nav = document.getElementById("nav");
+    const pageTitle = document.getElementById("pageTitle");
+    const pageSubtitle = document.getElementById("pageSubtitle");
+
+    let currentTicker = null;
+
+    const sectionTitles = {
+      overview: "Apžvalga",
+      financials: "Finansinės ataskaitos",
+      earnings: "Pajamos ir uždarbiai",
+      growth: "Augimo rodikliai",
+      valuation: "Vertinimas",
+      news: "Naujienos",
+      conclusion: "Investicinė išvada",
+    };
+
+    const sectionSubtitles = {
+      overview: "Dabartinė kaina, analitikų konsensusas ir pagrindiniai rodikliai.",
+      financials: "Pajamos, grynasis pelnas, EBITDA ir EPS dinamika per 10 metų.",
+      earnings: "Ketvirčių EPS istorija vs. lūkesčiai ir sekančio ketvirčio prognozė.",
+      growth: "Pajamų augimas, maržos, FCF ir skolos struktūra.",
+      valuation: "Multiplikatoriai ir DCF pagrįsta tikslinė vertė.",
+      news: "Naujausios naujienos ir įvykių santrauka.",
+      conclusion: "AI sugeneruota bendra investicinė išvada.",
+    };
+
+    function setStatus(section, state, text) {
+      const dot = document.getElementById(`status${section}Dot`);
+      const label = document.getElementById(`status${section}Text`);
+      if (!dot || !label) return;
+
+      dot.classList.remove("loading", "ok", "error");
+      if (state === "loading") dot.classList.add("loading");
+      if (state === "ok") dot.classList.add("ok");
+      if (state === "error") dot.classList.add("error");
+      label.textContent = text;
+    }
+
+    function switchSection(section) {
+      document
+        .querySelectorAll("section[id^='section-']")
+        .forEach((el) => el.classList.add("hidden"));
+      document
+        .getElementById(`section-${section}`)
+        .classList.remove("hidden");
+
+      nav.querySelectorAll("button").forEach((btn) =>
+        btn.classList.remove("active")
+      );
+      nav
+        .querySelector(`button[data-section="${section}"]`)
+        .classList.add("active");
+
+      pageTitle.textContent = sectionTitles[section];
+      pageSubtitle.textContent = sectionSubtitles[section];
+    }
+
+    nav.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-section]");
+      if (!btn) return;
+      const section = btn.getAttribute("data-section");
+      switchSection(section);
     });
 
-    function updateAll() {
-        const symbol = document.getElementById('symbolInput').value.toUpperCase();
+    loadBtn.addEventListener("click", () => {
+      const t = tickerInput.value.trim().toUpperCase();
+      if (!t) return;
+      currentTicker = t;
+      currentTickerEl.textContent = `Tikeris: ${t}`;
+      lastUpdatedEl.textContent = `Atnaujinta: ${new Date().toLocaleString("lt-LT")}`;
 
-        // 1. Pagrindinis grafikas
-        new TradingView.widget({
-            "autosize": true, "symbol": symbol, "interval": "D", "timezone": "Etc/UTC",
-            "theme": "dark", "style": "1", "locale": "lt", "container_id": "tv-chart"
-        });
+      // Paleidžiame visų skyrių užklausas
+      loadOverview();
+      loadFinancials();
+      loadEarnings();
+      loadGrowth();
+      loadValuation();
+      loadNews();
+      loadConclusion();
+    });
 
-        // 2. Viršutinė info juosta (Kaina, Market Cap)
-        renderWidget("tv-mini", "symbol-info", { "symbol": symbol, "width": "100%", "locale": "lt" });
+    tickerInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loadBtn.click();
+    });
 
-        // 3. Finansai (Čia yra tie 5 metų grafikai)
-        renderWidget("tv-fin", "financials", { "symbol": symbol, "displayMode": "regular", "width": "100%", "height": "100%", "locale": "lt" });
+    // ==========================
+    // ANTHROPIC API PAGALBINĖ FUNKCIJA
+    // ==========================
+    async function callAnthropic(prompt, toolsDescription) {
+      const body = {
+        model: ANTHROPIC_MODEL,
+        max_tokens: 2000,
+        temperature: 0.2,
+        tools: [
+          {
+            name: "web_search",
+            description:
+              "Naudok realaus laiko interneto paiešką, kad gautum naujausius finansinius ir naujienų duomenis.",
+            input_schema: {
+              type: "object",
+              properties: {
+                query: { type: "string" },
+              },
+              required: ["query"],
+            },
+          },
+        ],
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: prompt,
+              },
+            ],
+          },
+        ],
+      };
 
-        // 4. Profilis
-        renderWidget("tv-profile", "symbol-profile", { "symbol": symbol, "width": "100%", "height": "100%", "locale": "lt" });
+      const res = await fetch(ANTHROPIC_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify(body),
+      });
 
-        // 5. Techninė analizė
-        renderWidget("tv-tech", "technical-analysis", { "symbol": symbol, "interval": "1D", "width": "100%", "height": "100%", "locale": "lt" });
+      if (!res.ok) {
+        throw new Error("Anthropic API klaida: " + res.status);
+      }
 
-        // 6. Fundamentalūs skaičiai
-        renderWidget("tv-fund", "fundamental-data", { "symbol": symbol, "displayMode": "regular", "width": "100%", "height": "100%", "locale": "lt" });
-
-        // 7. Naujienos
-        renderWidget("tv-news", "timeline", { "symbol": symbol, "width": "100%", "height": "100%", "locale": "lt" });
+      const data = await res.json();
+      // Tikimės, kad modelis grąžina struktūrizuotą JSON tekste
+      const textPart =
+        data.content?.[0]?.text ||
+        data.content?.[0]?.content?.[0]?.text ||
+        "";
+      let parsed;
+      try {
+        parsed = JSON.parse(textPart);
+      } catch (e) {
+        console.warn("Nepavyko parse'inti JSON, grąžinamas tekstas:", textPart);
+        parsed = { rawText: textPart };
+      }
+      return parsed;
     }
 
-    function renderWidget(containerId, type, config) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = ""; // Išvalome seną
-        const script = document.createElement('script');
-        script.src = `https://s3.tradingview.com/external-embedding/embed-widget-${type}.js`;
-        script.async = true;
-        config.colorTheme = "dark";
-        config.isTransparent = true;
-        script.innerHTML = JSON.stringify(config);
-        container.appendChild(script);
+    // ==========================
+    // 1. APŽVALGA
+    // ==========================
+    document
+      .getElementById("refreshOverview")
+      .addEventListener("click", loadOverview);
+
+    async function loadOverview() {
+      if (!currentTicker) return;
+      setStatus("Overview", "loading", "Kraunama apžvalga...");
+
+      const prompt = `
+Tu esi profesionalus akcijų analitikas. Naudodamas web_search įrankį surink naujausius duomenis apie akciją su tikeriu "${currentTicker}".
+
+Grąžink GRIEŽTAI JSON formatu (be papildomo teksto), tokia struktūra:
+{
+  "price": {
+    "current": number,
+    "currency": "string",
+    "change_abs": number,
+    "change_pct": number
+  },
+  "target_price": {
+    "consensus": number,
+    "upside_pct": number
+  },
+  "ratings": {
+    "buy": number,
+    "hold": number,
+    "sell": number,
+    "ratio": "string"
+  },
+  "market_cap": {
+    "value": number,
+    "unit": "B" | "M",
+    "sector": "string"
+  },
+  "pe": {
+    "value": number,
+    "sector_avg": number
+  },
+  "eps": {
+    "ttm": number,
+    "growth_pct": number
+  },
+  "fifty_two_week": {
+    "low": number,
+    "high": number,
+    "range_comment": "string"
+  },
+  "liquidity": {
+    "avg_volume": string,
+    "beta": number
+  }
+}
+
+Naudok naujausius prieinamus duomenis.`;
+      try {
+        const data = await callAnthropic(prompt);
+        updateOverviewUI(data);
+        setStatus("Overview", "ok", "Apžvalga sėkmingai atnaujinta.");
+      } catch (e) {
+        console.error(e);
+        setStatus("Overview", "error", "Nepavyko gauti apžvalgos duomenų.");
+      }
     }
 
-    // Paleidžiame pirmą kartą
-    window.onload = updateAll;
-</script>
+    function updateOverviewUI(d) {
+      if (!d || d.rawText) return;
+
+      const price = d.price || {};
+      const target = d.target_price || {};
+      const ratings = d.ratings || {};
+      const mc = d.market_cap || {};
+      const pe = d.pe || {};
+      const eps = d.eps || {};
+      const w52 = d.fifty_two_week || {};
+      const liq = d.liquidity || {};
+
+      document.getElementById("ovPrice").textContent =
+        price.current != null
+          ? `${price.current.toFixed(2)} ${price.currency || ""}`
+          : "–";
+      document.getElementById("ovPriceChange").textContent =
+        price.change_pct != null
+          ? `${price.change_abs?.toFixed(2) ?? ""} (${price.change_pct.toFixed(
+              2
+            )}%)`
+          : "–";
+
+      document.getElementById("ovTargetPrice").textContent =
+        target.consensus != null ? target.consensus.toFixed(2) : "–";
+      document.getElementById("ovUpside").textContent =
+        target.upside_pct != null
+          ? `Potencialas: ${target.upside_pct.toFixed(1)}%`
+          : "–";
+
+      document.getElementById("ovRatingRatio").textContent =
+        ratings.ratio || "–";
+      document.getElementById("ovBuy").textContent =
+        "Buy: " + (ratings.buy ?? "–");
+      document.getElementById("ovHold").textContent =
+        "Hold: " + (ratings.hold ?? "–");
+      document.getElementById("ovSell").textContent =
+        "Sell: " + (ratings.sell ?? "–");
+
+      document.getElementById("ovMarketCap").textContent =
+        mc.value != null
+          ? `${mc.value.toFixed(1)}${mc.unit || ""}`
+          : "–";
+      document.getElementById("ovSector").textContent =
+        "Sektorius: " + (mc.sector || "–");
+
+      document.getElementById("ovPE").textContent =
+        pe.value != null ? pe.value.toFixed(1) : "–";
+      document.getElementById("ovPESector").textContent =
+        pe.sector_avg != null
+          ? `vs sektoriaus vidurkis: ${pe.sector_avg.toFixed(1)}`
+          : "vs sektoriaus vidurkis: –`;
+
+      document.getElementById("ovEPS").textContent =
+        eps.ttm != null ? eps.ttm.toFixed(2) : "–";
+      document.getElementById("ovEPSGrowth").textContent =
+        eps.growth_pct != null
+          ? `EPS augimas: ${eps.growth_pct.toFixed(1)}%`
+          : "EPS augimas: –";
+
+      document.getElementById("ov52w").textContent =
+        w52.low != null && w52.high != null
+          ? `${w52.low.toFixed(2)} / ${w52.high.toFixed(2)}`
+          : "–";
+      document.getElementById("ov52wRange").textContent =
+        w52.range_comment || "–";
+
+      document.getElementById("ovVolume").textContent =
+        liq.avg_volume || "–";
+      document.getElementById("ovBeta").textContent =
+        "Beta: " + (liq.beta != null ? liq.beta.toFixed(2) : "–");
+    }
+
+    // ==========================
+    // 2. FINANSINĖS ATASKAITOS
+    // ==========================
+    let chartRevenueNet, chartEBITDA, chartEPS;
+
+    document
+      .getElementById("refreshFinancials")
+      .addEventListener("click", loadFinancials);
+
+    async function loadFinancials() {
+      if (!currentTicker) return;
+      setStatus("Financials", "loading", "Kraunamos finansinės ataskaitos...");
+
+      const prompt = `
+Naudodamas web_search surink paskutinių 10 metų finansinius duomenis apie "${currentTicker}".
+
+Grąžink GRIEŽTAI JSON formatu:
+{
+  "years": [ "2015", "2016", ... ],
+  "revenue": [number],
+  "net_income": [number],
+  "ebitda": [number],
+  "eps": [number]
+}
+
+Visos sumos milijardais USD, EPS – USD vienai akcijai.`;
+      try {
+        const data = await callAnthropic(prompt);
+        updateFinancialsUI(data);
+        setStatus("Financials", "ok", "Finansiniai duomenys atnaujinti.");
+      } catch (e) {
+        console.error(e);
+        setStatus("Financials", "error", "Nepavyko gauti finansinių duomenų.");
+      }
+    }
+
+    function updateFinancialsUI(d) {
+      if (!d || d.rawText) return;
+      const years = d.years || [];
+      const revenue = d.revenue || [];
+      const net = d.net_income || [];
+      const ebitda = d.ebitda || [];
+      const eps = d.eps || [];
+
+      const ctxRevNet = document.getElementById("chartRevenueNet");
+      const ctxEBITDA = document.getElementById("chartEBITDA");
+      const ctxEPS = document.getElementById("chartEPS");
+
+      if (chartRevenueNet) chartRevenueNet.destroy();
+      if (chartEBITDA) chartEBITDA.destroy();
+      if (chartEPS) chartEPS.destroy();
+
+      chartRevenueNet = new Chart(ctxRevNet, {
+        type: "bar",
+        data: {
+          labels: years,
+          datasets: [
+            {
+              label: "Pajamos (mlrd. USD)",
+              data: revenue,
+              backgroundColor: "rgba(79, 70, 229, 0.6)",
+              borderRadius: 4,
+            },
+            {
+              label: "Grynasis pelnas (mlrd. USD)",
+              data: net,
+              type: "line",
+              borderColor: "#22c55e",
+              backgroundColor: "rgba(34, 197, 94, 0.2)",
+              tension: 0.3,
+              yAxisID: "y1",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: "#9ca3af" } },
+          },
+          scales: {
+            x: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+            y: {
+              ticks: { color: "#9ca3af" },
+              grid: { color: "#111827" },
+            },
+            y1: {
+              position: "right",
+              ticks: { color: "#9ca3af" },
+              grid: { drawOnChartArea: false },
+            },
+          },
+        },
+      });
+
+      chartEBITDA = new Chart(ctxEBITDA, {
+        type: "bar",
+        data: {
+          labels: years,
+          datasets: [
+            {
+              label: "EBITDA (mlrd. USD)",
+              data: ebitda,
+              backgroundColor: "rgba(56, 189, 248, 0.7)",
+              borderRadius: 4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: "#9ca3af" } },
+          },
+          scales: {
+            x: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+            y: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+          },
+        },
+      });
+
+      chartEPS = new Chart(ctxEPS, {
+        type: "line",
+        data: {
+          labels: years,
+          datasets: [
+            {
+              label: "EPS (USD)",
+              data: eps,
+              borderColor: "#f97316",
+              backgroundColor: "rgba(249, 115, 22, 0.2)",
+              tension: 0.3,
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: "#9ca3af" } },
+          },
+          scales: {
+            x: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+            y: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+          },
+        },
+      });
+    }
+
+    // ==========================
+    // 3. PAJAMOS IR UŽDARBIAI
+    // ==========================
+    let chartEarnings;
+
+    document
+      .getElementById("refreshEarnings")
+      .addEventListener("click", loadEarnings);
+
+    async function loadEarnings() {
+      if (!currentTicker) return;
+      setStatus("Earnings", "loading", "Kraunami uždarbio duomenys...");
+
+      const prompt = `
+Naudodamas web_search surink paskutinių ~12 ketvirčių EPS duomenis apie "${currentTicker}" ir analitikų lūkesčius.
+
+Grąžink GRIEŽTAI JSON formatu:
+{
+  "quarters": ["2022 Q1", ...],
+  "eps_actual": [number],
+  "eps_estimate": [number],
+  "beat_miss": ["beat" | "miss" | "inline"],
+  "next_quarter": {
+    "eps_estimate": number,
+    "report_date": "YYYY-MM-DD"
+  },
+  "stats": {
+    "beat_count": number,
+    "miss_count": number,
+    "inline_count": number
+  }
+}`;
+      try {
+        const data = await callAnthropic(prompt);
+        updateEarningsUI(data);
+        setStatus("Earnings", "ok", "Uždarbio duomenys atnaujinti.");
+      } catch (e) {
+        console.error(e);
+        setStatus("Earnings", "error", "Nepavyko gauti uždarbio duomenų.");
+      }
+    }
+
+    function updateEarningsUI(d) {
+      if (!d || d.rawText) return;
+      const q = d.quarters || [];
+      const actual = d.eps_actual || [];
+      const est = d.eps_estimate || [];
+      const beatMiss = d.beat_miss || [];
+      const next = d.next_quarter || {};
+      const stats = d.stats || {};
+
+      const ctx = document.getElementById("chartEarnings");
+      if (chartEarnings) chartEarnings.destroy();
+
+      const colors = beatMiss.map((bm) => {
+        if (bm === "beat") return "rgba(34, 197, 94, 0.8)";
+        if (bm === "miss") return "rgba(248, 113, 113, 0.8)";
+        return "rgba(250, 204, 21, 0.8)";
+      });
+
+      chartEarnings = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: q,
+          datasets: [
+            {
+              label: "EPS faktinis",
+              data: actual,
+              backgroundColor: colors,
+              borderRadius: 4,
+            },
+            {
+              label: "EPS lūkesčiai",
+              data: est,
+              type: "line",
+              borderColor: "#60a5fa",
+              backgroundColor: "rgba(96, 165, 250, 0.2)",
+              tension: 0.3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: "#9ca3af" } },
+          },
+          scales: {
+            x: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+            y: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+          },
+        },
+      });
+
+      document.getElementById("earnNextEPS").textContent =
+        next.eps_estimate != null ? next.eps_estimate.toFixed(2) + " USD" : "–";
+      document.getElementById("earnNextDate").textContent =
+        "Ataskaitos data: " + (next.report_date || "–");
+
+      document.getElementById("earnBeatMiss").textContent =
+        `Beat: ${stats.beat_count ?? "–"}, Miss: ${
+          stats.miss_count ?? "–"
+        }, Inline: ${stats.inline_count ?? "–"}`;
+    }
+
+    // ==========================
+    // 4. AUGIMO RODIKLIAI
+    // ==========================
+    let chartGrowthRevenue, chartMargins;
+
+    document
+      .getElementById("refreshGrowth")
+      .addEventListener("click", loadGrowth);
+
+    async function loadGrowth() {
+      if (!currentTicker) return;
+      setStatus("Growth", "loading", "Kraunami augimo rodikliai...");
+
+      const prompt = `
+Naudodamas web_search surink augimo rodiklius apie "${currentTicker}".
+
+Grąžink GRIEŽTAI JSON formatu:
+{
+  "years": ["2019", "2020", ...],
+  "revenue_yoy_pct": [number],
+  "gross_margin_pct": [number],
+  "operating_margin_pct": [number],
+  "net_margin_pct": [number],
+  "fcf": {
+    "latest": number,
+    "trend_comment": "string"
+  },
+  "leverage": {
+    "debt_to_equity": number,
+    "comment": "string"
+  }
+}`;
+      try {
+        const data = await callAnthropic(prompt);
+        updateGrowthUI(data);
+        setStatus("Growth", "ok", "Augimo rodikliai atnaujinti.");
+      } catch (e) {
+        console.error(e);
+        setStatus("Growth", "error", "Nepavyko gauti augimo rodiklių.");
+      }
+    }
+
+    function updateGrowthUI(d) {
+      if (!d || d.rawText) return;
+      const years = d.years || [];
+      const rev = d.revenue_yoy_pct || [];
+      const gm = d.gross_margin_pct || [];
+      const om = d.operating_margin_pct || [];
+      const nm = d.net_margin_pct || [];
+      const fcf = d.fcf || {};
+      const lev = d.leverage || {};
+
+      const ctxRev = document.getElementById("chartGrowthRevenue");
+      const ctxMar = document.getElementById("chartMargins");
+
+      if (chartGrowthRevenue) chartGrowthRevenue.destroy();
+      if (chartMargins) chartMargins.destroy();
+
+      chartGrowthRevenue = new Chart(ctxRev, {
+        type: "line",
+        data: {
+          labels: years,
+          datasets: [
+            {
+              label: "Pajamų augimas YoY (%)",
+              data: rev,
+              borderColor: "#22c55e",
+              backgroundColor: "rgba(34, 197, 94, 0.2)",
+              tension: 0.3,
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: "#9ca3af" } },
+          },
+          scales: {
+            x: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+            y: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+          },
+        },
+      });
+
+      chartMargins = new Chart(ctxMar, {
+        type: "line",
+        data: {
+          labels: years,
+          datasets: [
+            {
+              label: "Bruto marža (%)",
+              data: gm,
+              borderColor: "#60a5fa",
+              backgroundColor: "rgba(96, 165, 250, 0.2)",
+              tension: 0.3,
+              fill: true,
+            },
+            {
+              label: "Operacinė marža (%)",
+              data: om,
+              borderColor: "#f97316",
+              backgroundColor: "rgba(249, 115, 22, 0.2)",
+              tension: 0.3,
+              fill: true,
+            },
+            {
+              label: "Grynoji marža (%)",
+              data: nm,
+              borderColor: "#a855f7",
+              backgroundColor: "rgba(168, 85, 247, 0.2)",
+              tension: 0.3,
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: "#9ca3af" } },
+          },
+          scales: {
+            x: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+            y: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+          },
+        },
+      });
+
+      document.getElementById("growthFCF").textContent =
+        fcf.latest != null ? fcf.latest.toFixed(1) + " mlrd. USD" : "–";
+      document.getElementById("growthFCFTrend").textContent =
+        "Tendencija: " + (fcf.trend_comment || "–");
+
+      document.getElementById("growthDebtEquity").textContent =
+        lev.debt_to_equity != null ? lev.debt_to_equity.toFixed(2) : "–";
+      document.getElementById("growthLeverage").textContent =
+        "Svertas: " + (lev.comment || "–");
+    }
+
+    // ==========================
+    // 5. VERTINIMAS
+    // ==========================
+    let chartMultiples;
+
+    document
+      .getElementById("refreshValuation")
+      .addEventListener("click", loadValuation);
+
+    async function loadValuation() {
+      if (!currentTicker) return;
+      setStatus("Valuation", "loading", "Kraunamas vertinimas...");
+
+      const prompt = `
+Naudodamas web_search surink vertinimo multiplikatorius apie "${currentTicker}" ir sektoriaus vidurkius.
+
+Grąžink GRIEŽTAI JSON formatu:
+{
+  "multiples": {
+    "pe": { "company": number, "sector": number },
+    "ps": { "company": number, "sector": number },
+    "pb": { "company": number, "sector": number },
+    "ev_ebitda": { "company": number, "sector": number }
+  },
+  "dcf": {
+    "fair_value": number,
+    "discount_pct": number,
+    "assumptions": "string",
+    "risk_comment": "string"
+  }
+}`;
+      try {
+        const data = await callAnthropic(prompt);
+        updateValuationUI(data);
+        setStatus("Valuation", "ok", "Vertinimo duomenys atnaujinti.");
+      } catch (e) {
+        console.error(e);
+        setStatus("Valuation", "error", "Nepavyko gauti vertinimo duomenų.");
+      }
+    }
+
+    function updateValuationUI(d) {
+      if (!d || d.rawText) return;
+      const m = d.multiples || {};
+      const dcf = d.dcf || {};
+
+      const labels = ["P/E", "P/S", "P/B", "EV/EBITDA"];
+      const company = [
+        m.pe?.company ?? null,
+        m.ps?.company ?? null,
+        m.pb?.company ?? null,
+        m.ev_ebitda?.company ?? null,
+      ];
+      const sector = [
+        m.pe?.sector ?? null,
+        m.ps?.sector ?? null,
+        m.pb?.sector ?? null,
+        m.ev_ebitda?.sector ?? null,
+      ];
+
+      const ctx = document.getElementById("chartMultiples");
+      if (chartMultiples) chartMultiples.destroy();
+
+      chartMultiples = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            {
+              label: "Įmonė",
+              data: company,
+              backgroundColor: "rgba(79, 70, 229, 0.8)",
+              borderRadius: 4,
+            },
+            {
+              label: "Sektoriaus vidurkis",
+              data: sector,
+              backgroundColor: "rgba(148, 163, 184, 0.8)",
+              borderRadius: 4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { labels: { color: "#9ca3af" } },
+          },
+          scales: {
+            x: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+            y: { ticks: { color: "#9ca3af" }, grid: { color: "#111827" } },
+          },
+        },
+      });
+
+      document.getElementById("valDCF").textContent =
+        dcf.fair_value != null ? dcf.fair_value.toFixed(2) + " USD" : "–";
+      document.getElementById("valDCFAssumptions").textContent =
+        "Pagrindinės prielaidos: " + (dcf.assumptions || "–");
+
+      document.getElementById("valDiscount").textContent =
+        dcf.discount_pct != null
+          ? `${dcf.discount_pct.toFixed(1)}%`
+          : "–";
+      document.getElementById("valRisk").textContent =
+        "Rizikos profilis: " + (dcf.risk_comment || "–");
+    }
+
+    // ==========================
+    // 6. NAUJIENOS
+    // ==========================
+    document
+      .getElementById("refreshNews")
+      .addEventListener("click", loadNews);
+
+    async function loadNews() {
+      if (!currentTicker) return;
+      setStatus("News", "loading", "Kraunamos naujienos...");
+
+      const prompt = `
+Naudodamas web_search surink 10 naujausių naujienų apie "${currentTicker}" ir ją leidžiančią įmonę.
+
+Grąžink GRIEŽTAI JSON formatu:
+{
+  "news": [
+    {
+      "title": "string",
+      "source": "string",
+      "date": "YYYY-MM-DD",
+      "summary": "string"
+    }
+  ]
+}`;
+      try {
+        const data = await callAnthropic(prompt);
+        updateNewsUI(data);
+        setStatus("News", "ok", "Naujienos atnaujintos.");
+      } catch (e) {
+        console.error(e);
+        setStatus("News", "error", "Nepavyko gauti naujienų.");
+      }
+    }
+
+    function updateNewsUI(d) {
+      if (!d || d.rawText) return;
+      const list = d.news || [];
+      const container = document.getElementById("newsList");
+      container.innerHTML = "";
+
+      list.forEach((n) => {
+        const item = document.createElement("div");
+        item.className = "news-item";
+        item.innerHTML = `
+          <div class="news-title">${n.title || "Be pavadinimo"}</div>
+          <div class="news-meta">
+            <span>${n.source || "Nežinomas šaltinis"}</span>
+            <span>${n.date || "–"}</span>
+          </div>
+          <div class="news-summary">${n.summary || ""}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // ==========================
+    // 7. INVESTICINĖ IŠVADA
+    // ==========================
+    document
+      .getElementById("refreshConclusion")
+      .addEventListener("click", loadConclusion);
+
+    async function loadConclusion() {
+      if (!currentTicker) return;
+      setStatus("Conclusion", "loading", "Kuriama AI išvada...");
+
+      const prompt = `
+Tu esi profesionalus akcijų analitikas. Naudodamas web_search ir remdamasis naujausiais duomenimis (kaina, finansai, augimas, vertinimas, naujienos) suformuok investicinę išvadą apie "${currentTicker}".
+
+Grąžink GRIEŽTAI JSON formatu:
+{
+  "rating": "buy" | "hold" | "sell",
+  "horizon": "trumpalaikis" | "vidutinis" | "ilgalaikis",
+  "summary_lt": "2-3 sakinių santrauka lietuviškai",
+  "key_bull_points": ["string", ...],
+  "key_bear_points": ["string", ...],
+  "risks": ["string", ...],
+  "disclaimer_lt": "trumpas įspėjimas lietuviškai"
+}`;
+      try {
+        const data = await callAnthropic(prompt);
+        updateConclusionUI(data);
+        setStatus("Conclusion", "ok", "Investicinė išvada sugeneruota.");
+      } catch (e) {
+        console.error(e);
+        setStatus("Conclusion", "error", "Nepavyko sugeneruoti išvados.");
+      }
+    }
+
+    function updateConclusionUI(d) {
+      if (!d || d.rawText) return;
+      const badge = document.getElementById("conclusionBadge");
+      const textEl = document.getElementById("conclusionText");
+
+      let label = "–";
+      badge.className = "pill";
+
+      if (d.rating === "buy") {
+        label = "Rekomendacija: PIRKTI";
+        badge.classList.add("pill-buy");
+      } else if (d.rating === "hold") {
+        label = "Rekomendacija: LAIKYTI";
+        badge.classList.add("pill-hold");
+      } else if (d.rating === "sell") {
+        label = "Rekomendacija: PARDUOTI";
+        badge.classList.add("pill-sell");
+      }
+      badge.textContent = label;
+
+      const bull = (d.key_bull_points || []).map((p) => `<li>${p}</li>`).join("");
+      const bear = (d.key_bear_points || []).map((p) => `<li>${p}</li>`).join("");
+      const risks = (d.risks || []).map((p) => `<li>${p}</li>`).join("");
+
+      textEl.innerHTML = `
+        <p>${d.summary_lt || ""}</p>
+        <br/>
+        <strong>Pagrindiniai argumentai „už“:</strong>
+        <ul>${bull}</ul>
+        <br/>
+        <strong>Pagrindiniai argumentai „prieš“:</strong>
+        <ul>${bear}</ul>
+        <br/>
+        <strong>Pagrindinės rizikos:</strong>
+        <ul>${risks}</ul>
+        <br/>
+        <small>${d.disclaimer_lt || ""}</small>
+      `;
+    }
+
+    // Pradinis statusas
+    setStatus("Overview", "error", "Laukiama tikerio...");
+    setStatus("Financials", "error", "Laukiama tikerio...");
+    setStatus("Earnings", "error", "Laukiama tikerio...");
+    setStatus("Growth", "error", "Laukiama tikerio...");
+    setStatus("Valuation", "error", "Laukiama tikerio...");
+    setStatus("News", "error", "Laukiama tikerio...");
+    setStatus("Conclusion", "error", "Laukiama tikerio...");
+  </script>
 </body>
 </html>
